@@ -31,14 +31,11 @@ func (q *SMQ) Consume() <-chan Message {
 }
 
 func (q *SMQ) listen() {
-	for {
+	for payload := range q.jobQueue {
 		q.worker <- 1
-		select {
-		case payload := <-q.jobQueue:
-			q.consumer <- Message{
-				done:    q.worker,
-				Payload: payload,
-			}
+		q.consumer <- Message{
+			done:    q.worker,
+			Payload: payload,
 		}
 	}
 }
