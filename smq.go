@@ -1,13 +1,13 @@
 package smq
 
-//SMQ is
+//SMQ is the main controller for the queue.
 type SMQ struct {
 	jobQueue chan []byte
 	consumer chan Message
 	worker   chan int
 }
 
-//New is
+//New takes in the max queue size and workers.
 func New(maxQueue, maxWorkers int) *SMQ {
 	q := &SMQ{
 		jobQueue: make(chan []byte, maxQueue),
@@ -25,7 +25,7 @@ func (q *SMQ) Push(payload []byte) {
 	q.jobQueue <- payload
 }
 
-//Consume is
+//Consume will return a channel that new payloads from the queue will be sent to.
 func (q *SMQ) Consume() <-chan Message {
 	return q.consumer
 }
@@ -40,13 +40,13 @@ func (q *SMQ) listen() {
 	}
 }
 
-//Message is
+//Message contains the payload and also has a channel to inform the queue the message is finished.
 type Message struct {
 	Payload []byte
 	done    chan int
 }
 
-//Finish is
+//Finish will let the queue know it are ready to take on another worker.
 func (m Message) Finish() {
 	<-m.done
 }
