@@ -2,7 +2,15 @@
 
 A fun simple lightweight in-memory message queue.
 
-# Usage
+## Install
+
+```bash
+go get github.com/rodzzlessa24/smq
+```
+
+Or here is a gist link: https://gist.github.com/rodzzlessa24/b6d6f77deb491d0179ed0f7b42893ce8
+
+## Usage
 
 ```go
 // first arguemnt takes the maxQueues. Second arguement takes the maxWorkers.
