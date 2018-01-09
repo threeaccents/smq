@@ -1,6 +1,6 @@
 # Simple Message Queue
 
-A fun simple lightweight in-memory message queue.
+A fun simple lightweight in-memory message queue. Written in less than 55 lines of code.
 
 ## Install
 
