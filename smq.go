@@ -1,52 +1,23 @@
 package smq
 
-//SMQ is the main controller for the queue.
-type SMQ struct {
-	jobQueue chan []byte
-	consumer chan Message
-	worker   chan int
+import (
+	"sync"
+)
+
+// Queue stores and synchronizes tasks among producers and consumers.
+type Queue struct {
+	mu     sync.Mutex
+	items  map[string][]chan Task
+	buffer int
 }
 
-//New takes in the max queue size and workers.
-func New(maxQueue, maxWorkers int) *SMQ {
-	q := &SMQ{
-		jobQueue: make(chan []byte, maxQueue),
-		consumer: make(chan Message),
-		worker:   make(chan int, maxWorkers),
+// New creates and returns a new Queue.
+func New(buffer int) *Queue {
+	// buf := 50
+
+	return &Queue{
+		mu:     sync.Mutex{},
+		items:  make(map[string][]chan Task),
+		buffer: buffer,
 	}
-
-	go q.listen()
-
-	return q
-}
-
-//Push adds a payload to the queue
-func (q *SMQ) Push(payload []byte) {
-	q.jobQueue <- payload
-}
-
-//Consume will return a channel that new payloads from the queue will be sent to.
-func (q *SMQ) Consume() <-chan Message {
-	return q.consumer
-}
-
-func (q *SMQ) listen() {
-	for payload := range q.jobQueue {
-		q.worker <- 1
-		q.consumer <- Message{
-			done:    q.worker,
-			Payload: payload,
-		}
-	}
-}
-
-//Message contains the payload and also has a channel to inform the queue the message is finished.
-type Message struct {
-	Payload []byte
-	done    chan int
-}
-
-//Finish will let the queue know it are ready to take on another worker.
-func (m Message) Finish() {
-	<-m.done
 }

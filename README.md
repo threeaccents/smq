@@ -1,35 +1,78 @@
-# Simple Message Queue
-
-A fun simple lightweight in-memory message queue. Written in less than 55 lines of code.
+# SMQ
+A broadcasting in-memory message queue.
 
 ## Install
 
 ```bash
-go get github.com/rodzzlessa24/smq
+go get github.com/threeaccents/smq
 ```
 
-Or here is a gist link: https://gist.github.com/rodzzlessa24/b6d6f77deb491d0179ed0f7b42893ce8
-
 ## Usage
+```go
+
+type MyConsumer struct {
+}
+
+func (c *MyConsumer) HandleConsume(t smq.Task) {
+	fmt.Println("processing task", string(t.Body))
+	time.Sleep(3 * time.Second)
+}
+
+func main() {
+	q := smq.New(1000)
+
+	q.Consumer("test", 10, &MyConsumer{})
+
+	for i := 0; i < 30; i++ {
+		q.Produce("test", []byte(fmt.Sprintf("task number %d", i)))
+	}
+
+	fmt.Scanln()
+}
+
+```
+
+Or using a ConsumerFunc helper method.
 
 ```go
-// first arguemnt takes the maxQueues. Second arguement takes the maxWorkers.
-q := smq.New(1000, 50)
 
-// This returns a channel that we can listen for "events"
-msgs := q.Consume()
+func main() {
+	q := smq.New(1000)
 
-go func() {
-	for msg := range msgs {
-		go func(msg smq.Message) {
-			fmt.Println("executing worker", string(msg.Payload))
-			time.Sleep(2 * time.Second)
-			msg.Finish()
-		}(msg)
+	q.ConsumerFunc("test", 10, func(task smq.Task) {
+		fmt.Println("processing task", string(task.Body))
+		time.Sleep(10 * time.Second)
+	})
+
+	for i := 0; i < 30; i++ {
+		q.Produce("test", []byte(fmt.Sprintf("task number %d", i)))
 	}
-}()
 
-for i := 0; i < 2000; i++ {
-	q.Push([]byte(fmt.Sprintf("my message %d", i)))
+	fmt.Scanln()
+}
+
+```
+
+With multiple listeners
+
+```go
+func main() {
+	q := smq.New(1000)
+
+	q.ConsumerFunc("test", 10, func(task smq.Task) {
+		fmt.Println("processing task", string(task.Body))
+		time.Sleep(10 * time.Second)
+	})
+
+	q.ConsumerFunc("test", 10, func(task smq.Task) {
+		fmt.Println("processing task second handler", string(task.Body))
+		time.Sleep(10 * time.Second)
+	})
+
+	for i := 0; i < 30; i++ {
+		q.Produce("test", []byte(fmt.Sprintf("task number %d", i)))
+	}
+
+	fmt.Scanln()
 }
 ```

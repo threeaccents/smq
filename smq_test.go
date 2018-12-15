@@ -6,14 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	testWorkers = 2
-	testQLimit  = 1
-)
-
 func TestNew(t *testing.T) {
-	q := New(testQLimit, testWorkers)
-	assert.NotNil(t, q)
-	assert.Equal(t, cap(q.worker), testWorkers)
-	assert.Equal(t, cap(q.jobQueue), testQLimit)
+	testQueue := New(50)
+
+	assert.NotNil(t, testQueue)
+	assert.NotNil(t, testQueue.items)
+	assert.NotNil(t, testQueue.mu)
+	assert.Equal(t, testQueue.buffer, 50)
 }
