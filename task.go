@@ -1,9 +1,14 @@
 package smq
 
-import "time"
+import (
+	"fmt"
+	"time"
+	"github.com/satori/go.uuid"
+)
 
 // Task is
 type Task struct {
+	ID        string
 	Body      []byte
 	Processed bool
 	Attempts  int
@@ -11,7 +16,12 @@ type Task struct {
 }
 
 // Produce creates a new task and sends it to the queue.
-func (q *Queue) Produce(topic string, payload []byte) {
+func (q *Queue) Produce(topic string, v interface{}) error {
+	payload, err := Marshal(v)
+	if err != nil {
+		return fmt.Errorf("error marshaling payload %v", err)
+	}
+
 	q.mu.Lock()
 	// get all the topic listeners
 	listeners, ok := q.items[topic]
@@ -22,11 +32,14 @@ func (q *Queue) Produce(topic string, payload []byte) {
 	}
 	q.mu.Unlock()
 	task := Task{
+		ID:        uuid.NewV4().String(),
 		Body:      payload,
 		Timestamp: time.Now(),
 	}
 
-	for _, listner := range listeners {
-		listner <- task
+	for _, listener := range listeners {
+		listener <- task
 	}
+
+	return nil
 }

@@ -1,11 +1,6 @@
 # SMQ
 A broadcasting in-memory message queue.
 
-## Install
-
-```bash
-go get github.com/threeaccents/smq
-```
 
 ## Usage
 ```go
