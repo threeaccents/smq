@@ -3,7 +3,8 @@ package smq
 import (
 	"fmt"
 	"time"
-	"github.com/satori/go.uuid"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 // Task is
@@ -37,9 +38,11 @@ func (q *Queue) Produce(topic string, v interface{}) error {
 		Timestamp: time.Now(),
 	}
 
-	for _, listener := range listeners {
-		listener <- task
-	}
+	go func() {
+		for _, listener := range listeners {
+			listener <- task
+		}
+	}()
 
 	return nil
 }
