@@ -8,9 +8,18 @@ A broadcasting in-memory message queue.
 type MyConsumer struct {
 }
 
+type payload struct {
+	Msg string
+}
+
 func (c *MyConsumer) HandleConsume(t smq.Task) {
-	fmt.Println("processing task", string(t.Body))
-	time.Sleep(3 * time.Second)
+	var payload payload
+	if err := smq.Unmarshal(t.Body, &payload); err != nil {
+		log.Printf("unmarshaling task %s", err)
+		return
+	}
+	fmt.Println("processing task", payload.Msg)
+	time.Sleep(time.Duration(rand.Intn(15)) * time.Second)
 }
 
 func main() {
@@ -19,7 +28,7 @@ func main() {
 	q.Consumer("test", 10, &MyConsumer{})
 
 	for i := 0; i < 30; i++ {
-		q.Produce("test", []byte(fmt.Sprintf("task number %d", i)))
+		q.Produce("test", &payload{Msg: fmt.Sprintf("hello %d", i)})
 	}
 
 	fmt.Scanln()
@@ -34,13 +43,18 @@ Or using a ConsumerFunc helper method.
 func main() {
 	q := smq.New(1000)
 
-	q.ConsumerFunc("test", 10, func(task smq.Task) {
-		fmt.Println("processing task", string(task.Body))
-		time.Sleep(10 * time.Second)
+	q.ConsumerFunc("test", 10, func(t smq.Task) {
+		var payload payload
+		if err := smq.Unmarshal(t.Body, &payload); err != nil {
+			log.Printf("unmarshaling task %s", err)
+			return
+		}
+		fmt.Println("processing task", payload.Msg)
+		time.Sleep(time.Duration(rand.Intn(15)) * time.Second)
 	})
 
 	for i := 0; i < 30; i++ {
-		q.Produce("test", []byte(fmt.Sprintf("task number %d", i)))
+		q.Produce("test", &payload{Msg: fmt.Sprintf("hello %d", i)})
 	}
 
 	fmt.Scanln()
@@ -54,18 +68,28 @@ With multiple listeners
 func main() {
 	q := smq.New(1000)
 
-	q.ConsumerFunc("test", 10, func(task smq.Task) {
-		fmt.Println("processing task", string(task.Body))
-		time.Sleep(10 * time.Second)
+	q.ConsumerFunc("test", 10, func(t smq.Task) {
+		var payload payload
+		if err := smq.Unmarshal(t.Body, &payload); err != nil {
+			log.Printf("unmarshaling task %s", err)
+			return
+		}
+		fmt.Println("processing task", payload.Msg)
+		time.Sleep(time.Duration(rand.Intn(15)) * time.Second)
 	})
 
-	q.ConsumerFunc("test", 10, func(task smq.Task) {
-		fmt.Println("processing task second handler", string(task.Body))
-		time.Sleep(10 * time.Second)
+	q.ConsumerFunc("test", 10, func(t smq.Task) {
+		var payload payload
+		if err := smq.Unmarshal(t.Body, &payload); err != nil {
+			log.Printf("unmarshaling task %s", err)
+			return
+		}
+		fmt.Println("processing task second handler", payload.Msg)
+		time.Sleep(time.Duration(rand.Intn(15)) * time.Second)
 	})
 
 	for i := 0; i < 30; i++ {
-		q.Produce("test", []byte(fmt.Sprintf("task number %d", i)))
+		q.Produce("test", &payload{Msg: fmt.Sprintf("hello %d", i)})
 	}
 
 	fmt.Scanln()
