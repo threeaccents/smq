@@ -5,11 +5,12 @@ A broadcasting in-memory message queue. You can provide how many workers you wan
 ## Usage
 ```go
 
-type MyConsumer struct {
-}
-
 type payload struct {
 	Msg string
+}
+
+
+type MyConsumer struct {
 }
 
 func (c *MyConsumer) HandleConsume(t smq.Task) {
@@ -25,6 +26,9 @@ func (c *MyConsumer) HandleConsume(t smq.Task) {
 func main() {
 	q := smq.New(1000)
 
+	// topic name to listen to
+	// how many workers should handle this task
+	// the consumer handler to handle the task
 	q.Consumer("test", 10, &MyConsumer{})
 
 	for i := 0; i < 30; i++ {
