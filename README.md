@@ -1,5 +1,5 @@
 # SMQ
-A broadcasting in-memory message queue.
+A broadcasting in-memory message queue. You can provide how many workers you want per task and have multiple listeners per task.
 
 
 ## Usage
