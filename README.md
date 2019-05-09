@@ -9,7 +9,6 @@ type payload struct {
 	Msg string
 }
 
-
 type MyConsumer struct {
 }
 
